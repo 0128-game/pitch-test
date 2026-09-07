@@ -4,33 +4,171 @@
   <meta charset="UTF-8">
   <title>音程トレーニングゲーム</title>
   <style>
-    body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; color: #333; }
-    h1, h2 { text-align: center; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    .hidden { display: none; }
-    button { padding: 10px 15px; margin: 5px; font-size: 16px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background: #eef; }
-    button:hover { background: #dde; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    select { padding: 8px; font-size: 16px; margin-bottom: 10px; }
-    .status-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; color: white; margin-left: 10px; }
-    .status-未開放 { background: #888; }
-    .status-未プレイ { background: #aaa; }
-    .status-不合格 { background: #e53935; }
-    .status-合格 { background: #43a047; }
-    .status-パーフェクト { background: #fdd835; color: #333; font-weight: bold; }
-    
-    /* 簡易鍵盤スタイル */
-    .keyboard-container { display: flex; justify-content: center; margin: 20px 0; position: relative; height: 120px; }
-    .key { border: 1px solid #333; position: relative; box-sizing: border-box; }
-    .white-key { width: 35px; height: 120px; background: white; border-radius: 0 0 5px 5px; }
-    .black-key { width: 22px; height: 75px; background: #333; position: absolute; top: 0; z-index: 2; border-radius: 0 0 3px 3px; }
-    .key.active { background: #ffeb3b !important; }
-    .key-label { position: absolute; bottom: 5px; width: 100%; text-align: center; font-size: 10px; }
-    
-    .question-box { font-size: 24px; text-align: center; margin: 20px 0; font-weight: bold; }
-    .timer { font-size: 18px; text-align: center; color: #e53935; margin-bottom: 10px; }
-    .btn-group { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
-    .btn-group button.selected { background: #007bff; color: white; border-color: #0056b3; }
+    /* 全体レイアウト */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #222;
+    }
+    .card {
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+    }
+    .hidden {
+      display: none !important;
+    }
+
+    /* フォーム・設定 */
+    .setting-group {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    label {
+      font-weight: bold;
+    }
+    select {
+      padding: 8px 12px;
+      font-size: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+    }
+
+    /* レベル選択・ステータスバッジ */
+    .level-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      margin: 8px 0;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #fff;
+    }
+    .status-未開放 { background: #6c757d; }
+    .status-未プレイ { background: #adb5bd; }
+    .status-不合格 { background: #dc3545; }
+    .status-合格 { background: #28a745; }
+    .status-パーフェクト { background: #ffc107; color: #212529; }
+
+    /* ボタンデザイン */
+    button {
+      padding: 10px 18px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 6px;
+      border: 1px solid #dcdcdc;
+      background: #ffffff;
+      color: #333;
+      transition: all 0.2s ease;
+    }
+    button:hover:not(:disabled) {
+      background: #e9ecef;
+      border-color: #bbb;
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* 鍵盤スタイル */
+    .keyboard-container {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+      position: relative;
+      height: 130px;
+      background: #222;
+      padding: 8px 8px 0 8px;
+      border-radius: 8px;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+    }
+    .key {
+      position: relative;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    .white-key {
+      width: 36px;
+      height: 120px;
+      background: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 0 0 4px 4px;
+      z-index: 1;
+    }
+    .black-key {
+      width: 22px;
+      height: 75px;
+      background: #222222;
+      position: absolute;
+      top: 8px;
+      z-index: 2;
+      border-radius: 0 0 3px 3px;
+      border: 1px solid #000;
+    }
+    .key.active {
+      background: #ffeb3b !important;
+      box-shadow: 0 0 8px #ffeb3b;
+    }
+
+    /* 問題・回答エリア */
+    .question-box {
+      font-size: 26px;
+      text-align: center;
+      margin: 20px 0;
+      font-weight: bold;
+      color: #111;
+    }
+    .timer {
+      font-size: 18px;
+      text-align: center;
+      color: #dc3545;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    .btn-group button.selected {
+      background: #0d6efd;
+      color: #fff;
+      border-color: #0d6efd;
+    }
+    .primary-btn {
+      background: #198754;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+    }
+    .primary-btn:hover:not(:disabled) {
+      background: #157347;
+    }
   </style>
 </head>
 <body>
@@ -40,24 +178,24 @@
   <!-- 設定画面 -->
   <div id="settings-screen" class="card">
     <h2>設定</h2>
-    <div>
-      <label>音階表示方法: </label>
+    <div class="setting-group">
+      <label for="notation-setting">音階表示方法:</label>
       <select id="notation-setting">
         <option value="doremi">ドレミ (♯/♭)</option>
         <option value="cde">CDE (♯/♭)</option>
         <option value="haniho">ハニホ (嬰/変)</option>
       </select>
     </div>
-    <div>
-      <label>鍵盤表示: </label>
+    <div class="setting-group">
+      <label for="keyboard-setting">鍵盤表示:</label>
       <select id="keyboard-setting">
         <option value="highlight">指示された部分を光らせる</option>
         <option value="show">鍵盤表示させるだけ</option>
         <option value="hide">表示させない</option>
       </select>
     </div>
-    <div>
-      <label>問題解答時間: </label>
+    <div class="setting-group">
+      <label for="time-setting">問題解答時間:</label>
       <select id="time-setting">
         <option value="2">超ギリギリ(2秒)</option>
         <option value="3">ギリギリ(3秒)</option>
@@ -76,9 +214,8 @@
 
   <!-- ゲーム画面 -->
   <div id="game-screen" class="card hidden">
-    <div style="display:flex; justify-content:space-between;">
+    <div style="display:flex; justify-content:space-between; font-weight:bold; color:#666;">
       <span id="question-count">1 / 10問目</span>
-      <span id="current-time-setting-display"></span>
     </div>
     
     <div class="timer" id="timer-display">残り時間: --</div>
@@ -88,8 +225,8 @@
     <div id="keyboard-wrapper" class="keyboard-container"></div>
 
     <!-- 解答エリア -->
-    <div style="text-align: center;">
-      <p>ステップ1: 種別を選択</p>
+    <div style="text-align: center; margin-top: 20px;">
+      <p style="font-weight: bold; margin-bottom: 8px;">ステップ1: 種別を選択</p>
       <div class="btn-group" id="type-buttons">
         <button onclick="selectType('完全')">完全</button>
         <button onclick="selectType('長')">長</button>
@@ -98,7 +235,7 @@
         <button onclick="selectType('減')">減</button>
       </div>
 
-      <p>ステップ2: 度数を選択</p>
+      <p style="font-weight: bold; margin-bottom: 8px;">ステップ2: 度数を選択</p>
       <div class="btn-group" id="degree-buttons">
         <button onclick="selectDegree(1)">1度</button>
         <button onclick="selectDegree(2)">2度</button>
@@ -111,8 +248,8 @@
       </div>
 
       <div style="margin-top: 20px;">
-        <p>選択中: <strong id="selected-answer">---</strong></p>
-        <button onclick="submitAnswer()" id="submit-btn" disabled style="background:#28a745; color:white;">回答する</button>
+        <p style="font-size: 18px;">選択中: <strong id="selected-answer" style="color:#0d6efd;">---</strong></p>
+        <button onclick="submitAnswer()" id="submit-btn" class="primary-btn" disabled>回答する</button>
       </div>
     </div>
   </div>
@@ -120,29 +257,26 @@
   <!-- 結果画面 -->
   <div id="result-screen" class="card hidden" style="text-align: center;">
     <h2>結果発表</h2>
-    <p id="result-text" style="font-size: 24px; font-weight: bold;"></p>
-    <p id="result-detail"></p>
-    <button onclick="backToMenu()">ステージ一覧へ戻る</button>
+    <p id="result-text" style="font-size: 24px; font-weight: bold; margin: 20px 0;"></p>
+    <p id="result-detail" style="font-size: 16px; color: #555; margin-bottom: 25px;"></p>
+    <button onclick="backToMenu()" class="primary-btn">ステージ一覧へ戻る</button>
   </div>
 
 <script>
-// 音の基本データ定義 (0: C, 1: C#/Db, ... 11: B)
 const NOTE_NAMES = {
   doremi: ["ド", "ド♯", "レ", "レ♯", "ミ", "ファ", "ファ♯", "ソ", "ソ♯", "ラ", "ラ♯", "シ"],
   cde:    ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"],
   haniho: ["ハ", "嬰ハ", "ニ", "嬰ニ", "ホ", "ヘ", "嬰ヘ", "ト", "嬰ト", "イ", "嬰イ", "ロ"]
 };
 
-// 鍵盤表示用 (2オクターブ分)
-const WHITE_KEYS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24]; // C4~C6
+const WHITE_KEYS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
 const BLACK_KEYS = [
-  { pitch: 1, left: 23 }, { pitch: 3, left: 58 },
-  { pitch: 6, left: 128 }, { pitch: 8, left: 163 }, { pitch: 10, left: 198 },
-  { pitch: 13, left: 268 }, { pitch: 15, left: 303 },
-  { pitch: 18, left: 373 }, { pitch: 20, left: 408 }, { pitch: 22, left: 443 }
+  { pitch: 1, left: 28 }, { pitch: 3, left: 64 },
+  { pitch: 6, left: 136 }, { pitch: 8, left: 172 }, { pitch: 10, left: 208 },
+  { pitch: 13, left: 280 }, { pitch: 15, left: 316 },
+  { pitch: 18, left: 388 }, { pitch: 20, left: 424 }, { pitch: 22, left: 460 }
 ];
 
-// 正解データの半音数マッピング
 const INTERVAL_SEMITONES = {
   "完全1度": 0, "短2度": 1, "長2度": 2, "増1度": 1, "減2度": 0,
   "短3度": 3, "長3度": 4, "増2度": 3, "減3度": 2,
@@ -163,7 +297,6 @@ let timeLeft = 0;
 let selectedType = "";
 let selectedDegree = null;
 
-// localStorage からクリア状態を取得
 function getProgressData() {
   const data = localStorage.getItem('interval_game_progress');
   return data ? JSON.parse(data) : {};
@@ -173,7 +306,6 @@ function saveProgressData(data) {
   localStorage.setItem('interval_game_progress', JSON.stringify(data));
 }
 
-// 画面切り替え
 function showScreen(screenId) {
   ['settings-screen', 'level-screen', 'game-screen', 'result-screen'].forEach(id => {
     document.getElementById(id).classList.add('hidden');
@@ -181,7 +313,6 @@ function showScreen(screenId) {
   document.getElementById(screenId).classList.remove('hidden');
 }
 
-// レベル一覧の描画
 function renderLevels() {
   const progress = getProgressData();
   const timeSetting = document.getElementById('time-setting').value;
@@ -192,7 +323,6 @@ function renderLevels() {
     const key = `lvl_${lvl}_time_${timeSetting}`;
     let status = progress[key] || (lvl === 1 ? "未プレイ" : "未開放");
     
-    // 直前のレベルで解放条件（5秒以下設定で8問以上正解＝合格/パーフェクト）を満たしているか判定
     if (lvl > 1) {
       const prevKeyFast = `lvl_${lvl-1}_time_5`;
       const prevKeySFast = `lvl_${lvl-1}_time_3`;
@@ -206,22 +336,22 @@ function renderLevels() {
     }
 
     const div = document.createElement('div');
-    div.style.margin = "10px 0";
+    div.className = 'level-item';
     div.innerHTML = `
-      <span>レベル ${lvl}</span>
-      <span class="status-badge status-${status}">${status}</span>
+      <div>
+        <strong>レベル ${lvl}</strong>
+        <span class="status-badge status-${status}">${status}</span>
+      </div>
       <button onclick="startGame(${lvl})" ${status === "未開放" ? "disabled" : ""}>スタート</button>
     `;
     container.appendChild(div);
   }
 }
 
-// 問題生成ロジック
 function generateQuestions(level) {
   const list = [];
   const whitePitchList = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
   
-  // 各レベルごとの対象音程パターン
   let pool = [];
   if (level >= 1) pool.push("完全4度", "完全5度");
   if (level >= 2) pool.push("長2度", "短2度", "長3度", "短3度");
@@ -239,13 +369,11 @@ function generateQuestions(level) {
     while (attempts < 100) {
       attempts++;
       if (level <= 5) {
-        // 白鍵のみ
         root = whitePitchList[Math.floor(Math.random() * (whitePitchList.length - 8))];
         next = root + semitones;
         if (whitePitchList.includes(next)) break;
       } else {
-        // 黒鍵を含む
-        root = Math.floor(Math.random() * 13); // C4~C5スタート
+        root = Math.floor(Math.random() * 13);
         next = root + semitones;
         break;
       }
@@ -256,7 +384,6 @@ function generateQuestions(level) {
   return list;
 }
 
-// ゲーム開始
 function startGame(level) {
   currentLevel = level;
   currentQuestionIndex = 0;
@@ -267,7 +394,6 @@ function startGame(level) {
   nextQuestion();
 }
 
-// 次の問題
 function nextQuestion() {
   if (currentQuestionIndex >= 10) {
     endGame();
@@ -294,13 +420,16 @@ function getNoteName(pitch, notation) {
   return NOTE_NAMES[notation][index] + (notation === 'cde' ? octave : '');
 }
 
-// 鍵盤描画
 function renderKeyboard(root, next) {
   const kbMode = document.getElementById('keyboard-setting').value;
   const wrapper = document.getElementById('keyboard-wrapper');
   wrapper.innerHTML = "";
 
-  if (kbMode === 'hide') return;
+  if (kbMode === 'hide') {
+    wrapper.style.display = 'none';
+    return;
+  }
+  wrapper.style.display = 'flex';
 
   WHITE_KEYS.forEach(p => {
     const key = document.createElement('div');
@@ -322,7 +451,6 @@ function renderKeyboard(root, next) {
   });
 }
 
-// タイマー処理
 function startTimer() {
   clearInterval(timer);
   const timeLimit = parseInt(document.getElementById('time-setting').value, 10);
@@ -336,12 +464,11 @@ function startTimer() {
     timerDisplay.innerText = `残り時間: ${timeLeft}秒`;
     if (timeLeft <= 0) {
       clearInterval(timer);
-      submitAnswer(true); // 時間切れ自動判定
+      submitAnswer(true);
     }
   }, 1000);
 }
 
-// 回答選択ロジック
 function selectType(type) {
   selectedType = type;
   updateSelectionUI('type-buttons', type);
@@ -376,7 +503,6 @@ function resetAnswerSelection() {
   document.querySelectorAll('.btn-group button').forEach(btn => btn.classList.remove('selected'));
 }
 
-// 回答提出
 function submitAnswer(isTimeout = false) {
   clearInterval(timer);
   const q = questions[currentQuestionIndex];
@@ -390,7 +516,6 @@ function submitAnswer(isTimeout = false) {
   nextQuestion();
 }
 
-// ゲーム終了・クリア判定保存
 function endGame() {
   showScreen('result-screen');
   const timeSetting = parseInt(document.getElementById('time-setting').value, 10);
@@ -402,18 +527,16 @@ function endGame() {
     status = "合格";
   }
 
-  // LocalStorageに保存
   const progress = getProgressData();
   const key = `lvl_${currentLevel}_time_${timeSetting}`;
   
-  // より良い結果、あるいは既存結果の上書きロジック
   progress[key] = status;
   saveProgressData(progress);
 
   document.getElementById('result-text').innerText = `正解数: ${score} / 10問 (${status})`;
   document.getElementById('result-detail').innerText = (status === "合格" || status === "パーフェクト") 
-    ? "おめでとうございます！条件を満たしました。" 
-    : "残念！8問以上の正解を目指しましょう。";
+    ? "おめでとうございます！" 
+    : "8問以上の正解を目指しましょう。";
 }
 
 function backToMenu() {
@@ -421,7 +544,6 @@ function backToMenu() {
   showScreen('level-screen');
 }
 
-// イベントリスナーと初期化
 document.getElementById('time-setting').addEventListener('change', renderLevels);
 renderLevels();
 </script>
