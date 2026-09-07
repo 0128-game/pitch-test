@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音程トレーニングゲーム</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+            --text: #333333;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1, h2 { text-align: center; color: #2c3e50; }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .card { border: 1px solid #ddd; padding: 10px; border-radius: 8px; text-align: center; background: #fafafa; }
+        .status-badge { font-size: 12px; padding: 3px 8px; border-radius: 10px; color: white; display: inline-block; margin-top: 5px; }
+        .st-未開放 { background: #95a5a6; }
+        .st-未プレイ { background: #7f8c8d; }
+        .st-不合格 { background: #e74c3c; }
+        .st-合格 { background: #2ecc71; }
+        .st-パーフェクト { background: #f1c40f; color: #333; font-weight: bold; }
+        
+        /* 鍵盤スタイル */
+        .piano-container { display: flex; justify-content: center; margin: 15px 0; height: 100px; position: relative; }
+        .key { border: 1px solid #ccc; box-sizing: border-box; position: relative; }
+        .white-key { width: 30px; height: 100px; background: white; z-index: 1; border-radius: 0 0 4px 4px; }
+        .black-key { width: 18px; height: 60px; background: #333; z-index: 2; margin-left: -9px; margin-right: -9px; border-radius: 0 0 3px 3px; }
+        .key.active { background: #ff7675 !important; }
+
+        /* タイマーバー */
+        .timer-bg { width: 100%; background: #eee; height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        .timer-bar { width: 100%; height: 100%; background: #e74c3c; transition: width 0.1s linear; }
+
+        .hidden { display: none; }
+        .option-group { margin: 10px 0; text-align: center; }
+        .option-group label { margin-right: 15px; }
+        .flex-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- メインメニュー -->
+    <div id="screen-main">
+        <h1>音程トレーニング</h1>
+        
+        <div style="margin-bottom: 20px;">
+            <h3>設定</h3>
+            <div class="option-group">
+                <b>音階表記:</b><br>
+                <label><input type="radio" name="notation" value="doremi" checked> ドレミ(#/♭)</label>
+                <label><input type="radio" name="notation" value="cde"> CDE(#/♭)</label>
+                <label><input type="radio" name="notation" value="haniho"> ハニホ(嬰/変)</label>
+            </div>
+            <div class="option-group">
+                <b>鍵盤ヒント:</b><br>
+                <label><input type="radio" name="keyboard" value="light"> 光らせる</label>
+                <label><input type="radio" name="keyboard" value="show" checked> 表示のみ</label>
+                <label><input type="radio" name="keyboard" value="none"> 非表示</label>
+            </div>
+            <div class="option-group">
+                <b>制限時間:</b><br>
+                <select id="time-select">
+                    <option value="2000">超ギリギリ (2秒)</option>
+                    <option value="3000">ギリギリ (3秒)</option>
+                    <option value="5000" selected>速め (5秒)</option>
+                    <option value="10000">普通 (10秒)</option>
+                    <option value="20000">長め (20秒)</option>
+                </select>
+            </div>
+        </div>
+
+        <h3>レベル選択</h3>
+        <div class="grid" id="level-grid"></div>
+        <button onclick="resetData()" style="background:#e74c3c; font-size:12px;">データリセット</button>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <div id="screen-game" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button onclick="exitGame()">戻る</button>
+            <h2 id="game-title" style="margin:0;">レベル 1</h2>
+            <div id="q-counter">1 / 10</div>
+        </div>
+
+        <div class="timer-bg"><div id="timer-bar" class="timer-bar"></div></div>
+
+        <div style="text-align: center; margin: 15px 0;">
+            <button onclick="playCurrentInterval()">🔊 音を再開</button>
+            <div id="note-names" style="margin-top:5px; font-weight:bold; height:24px;"></div>
+        </div>
+
+        <!-- 鍵盤エリア -->
+        <div id="piano-wrapper" class="piano-container"></div>
+
+        <!-- 解答エリア -->
+        <div style="text-align: center;">
+            <p>1. 種類を選択:</p>
+            <div class="flex-wrap" id="type-buttons">
+                <button onclick="selectType('完全')">完全</button>
+                <button onclick="selectType('長')">長</button>
+                <button onclick="selectType('短')">短</button>
+                <button onclick="selectType('増')">増</button>
+                <button onclick="selectType('減')">減</button>
+            </div>
+
+            <p>2. 度数を選択 (選択中: <span id="selected-type-text" style="font-weight:bold; color:var(--primary);">なし</span>):</p>
+            <div class="flex-wrap" id="degree-buttons">
+                <button onclick="selectDegree(1)">1度</button>
+                <button onclick="selectDegree(2)">2度</button>
+                <button onclick="selectDegree(3)">3度</button>
+                <button onclick="selectDegree(4)">4度</button>
+                <button onclick="selectDegree(5)">5度</button>
+                <button onclick="selectDegree(6)">6度</button>
+                <button onclick="selectDegree(7)">7度</button>
+                <button onclick="selectDegree(8)">8度</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- リザルト画面 -->
+    <div id="screen-result" class="hidden" style="text-align: center;">
+        <h2>結果発表</h2>
+        <h1 id="result-score">0 / 10</h1>
+        <p id="result-status-text"></p>
+        <button onclick="exitGame()">メニューへ戻る</button>
+    </div>
+</div>
+
+<script>
+// 音データと音程の基本定義
+const NOTE_NAMES = {
+    doremi: ['ド', 'ド#', 'レ', 'レ#', 'ミ', 'ファ', 'ファ#', 'ソ', 'ソ#', 'ラ', 'ラ#', 'シ'],
+    cde:    ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
+    haniho: ['ハ', '嬰ハ', 'ニ', '嬰ニ', 'ホ', 'ヘ', '嬰ヘ', 'ト', '嬰ト', 'イ', '嬰イ', 'ロ']
+};
+
+// 幹音（白鍵）のノート番号オフセット（C4=60）
+const WHITE_KEYS = [60, 62, 64, 65, 67, 69, 71, 72, 74, 76, 77, 79, 81, 83, 84]; 
+
+// レベル別の音程範囲設定 (semitones: 半音数, degree: 度数)
+const INTERVAL_POOL = {
+    P1:  { type: '完全', degree: 1, semitones: 0 },
+    m2:  { type: '短',   degree: 2, semitones: 1 },
+    M2:  { type: '長',   degree: 2, semitones: 2 },
+    m3:  { type: '短',   degree: 3, semitones: 3 },
+    M3:  { type: '長',   degree: 3, semitones: 4 },
+    P4:  { type: '完全', degree: 4, semitones: 5 },
+    A4:  { type: '増',   degree: 4, semitones: 6 },
+    d5:  { type: '減',   degree: 5, semitones: 6 },
+    P5:  { type: '完全', degree: 5, semitones: 7 },
+    m6:  { type: '短',   degree: 6, semitones: 8 },
+    M6:  { type: '長',   degree: 6, semitones: 9 },
+    m7:  { type: '短',   degree: 7, semitones: 10 },
+    M7:  { type: '長',   degree: 7, semitones: 11 },
+    P8:  { type: '完全', degree: 8, semitones: 12 },
+};
+
+// レベル定義
+const LEVEL_CONFIG = {
+    1: ['P4', 'P5'],
+    2: ['P4', 'P5', 'm2', 'M2', 'm3', 'M3'],
+    3: ['P4', 'P5', 'm2', 'M2', 'm3', 'M3', 'A4', 'd5'],
+    4: ['P4', 'P5', 'm2', 'M2', 'm3', 'M3', 'A4', 'd5', 'm6', 'M6', 'm7', 'M7'],
+    5: ['P1', 'P4', 'P5', 'P8', 'm2', 'M2', 'm3', 'M3', 'A4', 'd5', 'm6', 'M6', 'm7', 'M7'],
+    6: ['P1', 'P4', 'P5', 'P8', 'm2', 'M2', 'm3', 'M3', 'A4', 'd5', 'm6', 'M6', 'm7', 'M7'], // 黒鍵開放
+    7: ['ALL'] // 全増減含む
+};
+
+// Web Audio APIの準備
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function playTone(freq, startTime, duration) {
+    if (!audioCtx) audioCtx = new AudioContext();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    
+    gain.gain.setValueAtTime(0.3, startTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+}
+
+function midiToFreq(midi) {
+    return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+// ゲーム状態変数
+let currentLevel = 1;
+let currentQuestion = 0;
+let score = 0;
+let timer = null;
+let timeLimit = 5000;
+let currentIntervalData = null;
+let selectedType = '';
+let userProgress = {};
+
+// LocalStorage 管理
+function loadProgress() {
+    const saved = localStorage.getItem('interval_game_progress');
+    if (saved) {
+        userProgress = JSON.parse(saved);
+    } else {
+        userProgress = {};
+    }
+}
+
+function saveProgress(level, time, status) {
+    if (!userProgress[time]) userProgress[time] = {};
+    const current = userProgress[time][level];
+    
+    // ステータスの優先度(パーフェクト > 合格 > 不合格)
+    const priority = { 'パーフェクト': 4, '合格': 3, '不合格': 2, '未プレイ': 1, '未開放': 0 };
+    if (!current || priority[status] > priority[current]) {
+        userProgress[time][level] = status;
+        localStorage.setItem('interval_game_progress', JSON.stringify(userProgress));
+    }
+}
+
+function getStatus(level, time) {
+    if (level === 1) {
+        return userProgress[time]?.[1] || '未プレイ';
+    }
+    // 前のレベルで「速め(5000ms)」以下かつ「合格」以上をクリアしているかチェック
+    const fastTimes = ['2000', '3000', '5000'];
+    let unlocked = false;
+    for (let t of fastTimes) {
+        const st = userProgress[t]?.[level - 1];
+        if (st === '合格' || st === 'パーフェクト') {
+            unlocked = true;
+            break;
+        }
+    }
+    if (!unlocked) return '未開放';
+    return userProgress[time]?.[level] || '未プレイ';
+}
+
+// UI描画
+function renderMainScreen() {
+    loadProgress();
+    const grid = document.getElementById('level-grid');
+    grid.innerHTML = '';
+    const selectedTime = document.getElementById('time-select').value;
+
+    for (let l = 1; l <= 7; l++) {
+        const status = getStatus(l, selectedTime);
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <b>レベル ${l}</b><br>
+            <span class="status-badge st-${status}">${status}</span><br>
+            <button onclick="startGame(${l})" ${status === '未開放' ? 'disabled' : ''} style="margin-top:10px;">挑戦</button>
+        `;
+        grid.appendChild(card);
+    }
+}
+
+document.getElementById('time-select').addEventListener('change', renderMainScreen);
+
+// ゲーム処理
+function startGame(level) {
+    currentLevel = level;
+    currentQuestion = 0;
+    score = 0;
+    timeLimit = parseInt(document.getElementById('time-select').value);
+
+    document.getElementById('screen-main').classList.add('hidden');
+    document.getElementById('screen-result').classList.add('hidden');
+    document.getElementById('screen-game').classList.remove('hidden');
+    document.getElementById('game-title').innerText = `レベル ${level}`;
+
+    nextQuestion();
+}
+
+function generateQuestion() {
+    let rootMidi, nextMidi, intervalInfo;
+
+    if (currentLevel <= 5) {
+        // 白鍵のみ（C4:60 〜 B5:83）
+        const rootIdx = Math.floor(Math.random() * 8); // C4からC5付近まで
+        rootMidi = WHITE_KEYS[rootIdx];
+        
+        const levelPool = LEVEL_CONFIG[currentLevel];
+        const key = levelPool[Math.floor(Math.random() * levelPool.length)];
+        intervalInfo = INTERVAL_POOL[key];
+        
+        // 白鍵基準で度数に応じた目標ノートを算出
+        const targetWhiteIdx = rootIdx + (intervalInfo.degree - 1);
+        nextMidi = WHITE_KEYS[targetWhiteIdx];
+        
+        // 実際の音程から正確な度数名を再特定
+        const actualSemitones = nextMidi - rootMidi;
+        intervalInfo = getIntervalBySemitonesAndDegree(actualSemitones, intervalInfo.degree);
+    } else if (currentLevel === 6) {
+        // 黒鍵含む標準音程
+        rootMidi = 60 + Math.floor(Math.random() * 12);
+        const levelPool = LEVEL_CONFIG[5];
+        const key = levelPool[Math.floor(Math.random() * levelPool.length)];
+        intervalInfo = INTERVAL_POOL[key];
+        nextMidi = rootMidi + intervalInfo.semitones;
+    } else {
+        // レベル7: すべての増減を含む
+        rootMidi = 60 + Math.floor(Math.random() * 12);
+        const degree = Math.floor(Math.random() * 8) + 1;
+        const semitoneShift = Math.floor(Math.random() * 15); // 0〜14半音
+        nextMidi = rootMidi + semitoneShift;
+        intervalInfo = getIntervalBySemitonesAndDegree(semitoneShift, degree);
+    }
+
+    return { rootMidi, nextMidi, intervalInfo };
+}
+
+// 半音数と度数から正確な音程名を返す関数
+function getIntervalBySemitonesAndDegree(semitones, degree) {
+    // 簡易判定マップ (度数と標準半音数の差から増/減/長/短/完全を算出)
+    const baseSemitones = { 1:0, 2:2, 3:4, 4:5, 5:7, 6:9, 7:11, 8:12 };
+    const diff = semitones - baseSemitones[degree];
+
+    let type = '';
+    if ([1, 4, 5, 8].includes(degree)) {
+        if (diff === 0) type = '完全';
+        else if (diff > 0) type = '増';
+        else type = '減';
+    } else {
+        if (diff === 0) type = '長';
+        else if (diff === -1) type = '短';
+        else if (diff > 0) type = '増';
+        else type = '減';
+    }
+    return { type, degree, semitones };
+}
+
+function nextQuestion() {
+    if (currentQuestion >= 10) {
+        finishGame();
+        return;
+    }
+
+    currentQuestion++;
+    selectedType = '';
+    document.getElementById('selected-type-text').innerText = 'なし';
+    document.getElementById('q-counter').innerText = `${currentQuestion} / 10`;
+
+    currentIntervalData = generateQuestion();
+    
+    // 音名表示の設定反映
+    const notation = document.querySelector('input[name="notation"]:checked').value;
+    const rName = NOTE_NAMES[notation][currentIntervalData.rootMidi % 12];
+    const nName = NOTE_NAMES[notation][currentIntervalData.nextMidi % 12];
+    document.getElementById('note-names').innerText = `${rName} - ${nName}`;
+
+    renderPiano();
+    playCurrentInterval();
+    startTimer();
+}
+
+function renderPiano() {
+    const kbSetting = document.querySelector('input[name="keyboard"]:checked').value;
+    const wrapper = document.getElementById('piano-wrapper');
+    wrapper.innerHTML = '';
+
+    if (kbSetting === 'none') return;
+
+    // 2オクターブ分の簡易鍵盤（C4〜B5）
+    for (let m = 60; m <= 83; m++) {
+        const isBlack = [1, 3, 6, 8, 10].includes(m % 12);
+        if (isBlack) continue; // 描画ロジックの簡略化のため白鍵ベースで配置
+
+        const key = document.createElement('div');
+        key.className = 'key white-key';
+        
+        if (kbSetting === 'light' && (m === currentIntervalData.rootMidi || m === currentIntervalData.nextMidi)) {
+            key.classList.add('active');
+        }
+        wrapper.appendChild(key);
+
+        // 黒鍵の配置
+        if ([0, 1, 3, 4, 5].includes((m - 60) % 12) && m < 83) {
+            const blackMidi = m + 1;
+            const blackKey = document.createElement('div');
+            blackKey.className = 'key black-key';
+            if (kbSetting === 'light' && (blackMidi === currentIntervalData.rootMidi || blackMidi === currentIntervalData.nextMidi)) {
+                blackKey.classList.add('active');
+            }
+            wrapper.appendChild(blackKey);
+        }
+    }
+}
+
+function playCurrentInterval() {
+    if (!audioCtx) audioCtx = new AudioContext();
+    const now = audioCtx.currentTime;
+    playTone(midiToFreq(currentIntervalData.rootMidi), now, 0.8);
+    playTone(midiToFreq(currentIntervalData.nextMidi), now + 0.6, 0.8);
+}
+
+function startTimer() {
+    clearInterval(timer);
+    const bar = document.getElementById('timer-bar');
+    bar.style.transition = 'none';
+    bar.style.width = '100%';
+    
+    setTimeout(() => {
+        bar.style.transition = `width ${timeLimit}ms linear`;
+        bar.style.width = '0%';
+    }, 10);
+
+    const startTime = Date.now();
+    timer = setInterval(() => {
+        if (Date.now() - startTime >= timeLimit) {
+            clearInterval(timer);
+            checkAnswer(null, null); // タイムアップ
+        }
+    }, 100);
+}
+
+function selectType(type) {
+    selectedType = type;
+    document.getElementById('selected-type-text').innerText = type;
+}
+
+function selectDegree(degree) {
+    if (!selectedType) {
+        alert('最初に「完全」「長」「短」などの種類を選択してください。');
+        return;
+    }
+    clearInterval(timer);
+    checkAnswer(selectedType, degree);
+}
+
+function checkAnswer(ansType, ansDegree) {
+    const correct = currentIntervalData.intervalInfo;
+    if (ansType === correct.type && ansDegree === correct.degree) {
+        score++;
+    }
+    nextQuestion();
+}
+
+function finishGame() {
+    document.getElementById('screen-game').classList.add('hidden');
+    document.getElementById('screen-result').classList.remove('hidden');
+
+    document.getElementById('result-score').innerText = `${score} / 10`;
+
+    let status = '不合格';
+    if (score === 10) status = 'パーフェクト';
+    else if (score >= 8) status = '合格';
+
+    const selectedTime = document.getElementById('time-select').value;
+    saveProgress(currentLevel, selectedTime, status);
+
+    document.getElementById('result-status-text').innerText = `判定: ${status}`;
+}
+
+function exitGame() {
+    clearInterval(timer);
+    document.getElementById('screen-game').classList.add('hidden');
+    document.getElementById('screen-result').classList.add('hidden');
+    document.getElementById('screen-main').classList.remove('hidden');
+    renderMainScreen();
+}
+
+function resetData() {
+    if (confirm('すべてのクリア状況をリセットしますか？')) {
+        localStorage.removeItem('interval_game_progress');
+        renderMainScreen();
+    }
+}
+
+// 初期化
+renderMainScreen();
+</script>
+</body>
+</html>
