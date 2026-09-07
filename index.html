@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>音程マスター - Interval Master</title>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4e54c8;
-            --primary-light: #8f94fb;
-            --secondary: #ff6b6b;
-            --accent: #feca57;
-            --bg-grad-1: #1a1c29;
-            --bg-grad-2: #2a2e45;
-            --card-bg: rgba(255, 255, 255, 0.08);
-            --card-border: rgba(255, 255, 255, 0.15);
-            --text-main: #ffffff;
-            --text-sub: #a0a5c0;
+            --bg-main: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #212529;
+            --text-sub: #6c757d;
+            --border-color: #e9ecef;
+            --primary: #2b6cb0;
+            --primary-hover: #2c5282;
+            --accent: #d69e2e;
+            --danger: #e53e3e;
+            --success: #38a169;
         }
 
         * {
@@ -25,8 +25,8 @@
         }
 
         body {
-            font-family: 'M PLUS Rounded 1c', sans-serif;
-            background: linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2));
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
             padding: 20px;
@@ -38,27 +38,21 @@
 
         .container {
             width: 100%;
-            max-width: 520px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--card-border);
-            padding: 30px 24px;
-            border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-            position: relative;
-            overflow: hidden;
+            max-width: 540px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 36px 28px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
         }
 
         h1 {
             text-align: center;
-            font-size: 32px;
-            font-weight: 800;
-            margin: 0 0 10px 0;
-            background: linear-gradient(45deg, #fff, var(--primary-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 1px;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
         }
 
         p.subtitle {
@@ -66,136 +60,133 @@
             color: var(--text-sub);
             font-size: 14px;
             margin-top: 0;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
 
         /* ボタンデザイン */
         .btn {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 12px;
+            background-color: var(--primary);
+            color: #ffffff;
+            border: 1px solid var(--primary);
+            padding: 12px 20px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: 700;
+            font-size: 15px;
+            font-weight: 500;
             font-family: inherit;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(78, 84, 200, 0.4);
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
             width: 100%;
             margin-bottom: 12px;
         }
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(78, 84, 200, 0.6);
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
         }
         .btn:active {
             transform: translateY(1px);
         }
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: none;
-            border: 1px solid var(--card-border);
+            background-color: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
         }
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: none;
+            background-color: #f1f3f5;
+            border-color: #ced4da;
         }
         .btn-danger {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
-            box-shadow: 0 4px 15px rgba(255, 75, 43, 0.3);
+            background-color: #ffffff;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        .btn-danger:hover {
+            background-color: #fff5f5;
         }
 
         /* 画面切り替え */
-        .screen { display: none; animation: fadeIn 0.3s ease; }
+        .screen { display: none; }
         .screen.active { display: block; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
-        }
 
         /* グリッド・カード系 */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         .level-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            padding: 15px;
-            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 10px;
             text-align: center;
-            transition: 0.2s;
         }
         .level-card.locked {
-            opacity: 0.4;
-            filter: grayscale(1);
+            background: #f1f3f5;
+            opacity: 0.6;
         }
         .status-badge {
             font-size: 11px;
-            padding: 4px 8px;
-            border-radius: 20px;
+            padding: 3px 8px;
+            border-radius: 4px;
             font-weight: 700;
             display: inline-block;
             margin: 8px 0;
         }
-        .st-未開放 { background: #555; color: #ccc; }
-        .st-未プレイ { background: #445; color: #aaa; }
-        .st-不合格 { background: #ff4757; color: white; }
-        .st-合格 { background: #2ed573; color: white; }
-        .st-パーフェクト { background: var(--accent); color: #333; }
+        .st-未開放 { background: #e9ecef; color: #495057; }
+        .st-未プレイ { background: #e9ecef; color: #495057; }
+        .st-不合格 { background: #fed7d7; color: #c53030; }
+        .st-合格 { background: #c6f6d5; color: #22543d; }
+        .st-パーフェクト { background: #fefcbf; color: #744210; }
 
         /* 設定項目 */
         .setting-group {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            padding: 16px;
-            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            border-radius: 10px;
             margin-bottom: 16px;
+            background: #ffffff;
         }
         .setting-title {
             font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--primary-light);
+            margin-bottom: 12px;
+            color: var(--text-main);
             font-size: 14px;
         }
         .radio-group {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
         .radio-group label {
             flex: 1;
             text-align: center;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 8px 12px;
-            border-radius: 8px;
+            background: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 6px;
             font-size: 13px;
             cursor: pointer;
-            border: 1px solid transparent;
+            border: 1px solid var(--border-color);
             transition: 0.2s;
         }
         .radio-group input { display: none; }
         .radio-group label:has(input:checked) {
             background: var(--primary);
-            border-color: var(--primary-light);
+            color: #ffffff;
+            border-color: var(--primary);
             font-weight: bold;
         }
 
         select {
             width: 100%;
             padding: 10px;
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.4);
-            color: white;
-            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
             font-family: inherit;
             font-size: 14px;
         }
@@ -207,71 +198,80 @@
             margin: 20px 0;
             height: 90px;
             position: relative;
-            background: rgba(0,0,0,0.3);
+            background: #f1f3f5;
             padding: 8px;
-            border-radius: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
         .key {
-            border-radius: 0 0 4px 4px;
+            border-radius: 0 0 3px 3px;
             box-sizing: border-box;
-            transition: background 0.1s;
         }
         .white-key {
             width: 26px;
             height: 100%;
-            background: #e0e0e0;
-            border: 1px solid #bbb;
+            background: #ffffff;
+            border: 1px solid #ced4da;
             z-index: 1;
         }
         .black-key {
             width: 16px;
             height: 60%;
-            background: #222;
+            background: #343a40;
             z-index: 2;
             margin-left: -8px;
             margin-right: -8px;
-            border: 1px solid #000;
+            border: 1px solid #212529;
         }
         .key.active {
-            background: var(--secondary) !important;
-            box-shadow: 0 0 10px var(--secondary);
+            background: var(--accent) !important;
         }
 
         /* タイマーバー */
         .timer-bg {
             width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            height: 8px;
-            border-radius: 4px;
+            background: #e9ecef;
+            height: 6px;
+            border-radius: 3px;
             overflow: hidden;
-            margin: 15px 0;
+            margin: 16px 0;
         }
         .timer-bar {
             width: 100%;
             height: 100%;
-            background: var(--secondary);
+            background: var(--primary);
         }
 
         /* 回答ボタン */
         .ans-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 8px;
             justify-content: center;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
         .btn-ans {
-            width: calc(20% - 6px);
+            flex: 1 1 calc(20% - 8px);
+            min-width: 60px;
             padding: 10px 0;
             font-size: 14px;
             margin: 0;
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        .btn-ans:hover {
+            background: #f1f3f5;
+            border-color: #ced4da;
         }
         .btn-num {
-            width: calc(25% - 6px);
-            background: rgba(255, 255, 255, 0.15);
+            flex: 1 1 calc(25% - 8px);
+            min-width: 50px;
         }
-        .btn-num:hover {
-            background: rgba(255, 255, 255, 0.3);
+
+        /* 非表示クラス */
+        .hidden-option {
+            display: none !important;
         }
     </style>
 </head>
@@ -282,11 +282,11 @@
     <!-- 1. トップ画面 (ホーム) -->
     <div id="screen-home" class="screen active">
         <h1>音程マスター</h1>
-        <p class="subtitle">音感＆度数識別トレーニング</p>
+        <p class="subtitle">音感・度数識別トレーニング</p>
         
         <div style="margin-top: 40px;">
-            <button class="btn" onclick="showScreen('screen-levels')">🎮 プレイ</button>
-            <button class="btn btn-secondary" onclick="showScreen('screen-settings')">⚙️ 設定</button>
+            <button class="btn" onclick="showScreen('screen-levels')">プレイ</button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-settings')">設定</button>
         </div>
     </div>
 
@@ -303,7 +303,7 @@
     <!-- 3. 設定画面 -->
     <div id="screen-settings" class="screen">
         <h1>設定</h1>
-        <p class="subtitle">ゲームの難易度や表示を変更</p>
+        <p class="subtitle">ゲーム環境の変更</p>
 
         <div class="setting-group">
             <div class="setting-title">制限時間（難易度）</div>
@@ -335,59 +335,59 @@
         </div>
 
         <button class="btn" onclick="showScreen('screen-home')">保存して戻る</button>
-        <button class="btn btn-danger" onclick="resetData()" style="font-size: 12px; padding: 8px;">データ初期化</button>
+        <button class="btn btn-danger" onclick="resetData()" style="font-size: 13px; padding: 8px;">データ初期化</button>
     </div>
 
     <!-- 4. ゲームプレイ画面 -->
     <div id="screen-game" class="screen">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <button class="btn btn-secondary" onclick="exitGame()" style="width: auto; padding: 6px 12px; font-size: 12px; margin:0;">中断</button>
-            <span id="game-title" style="font-weight: bold; color: var(--primary-light);">LV.1</span>
-            <span id="q-counter" style="font-weight: bold;">1 / 10</span>
+            <button class="btn btn-secondary" onclick="exitGame()" style="width: auto; padding: 6px 14px; font-size: 13px; margin:0;">中断</button>
+            <span id="game-title" style="font-weight: bold; color: var(--text-main);">LEVEL 1</span>
+            <span id="q-counter" style="font-weight: bold; color: var(--text-sub);">1 / 10</span>
         </div>
 
         <div class="timer-bg"><div id="timer-bar" class="timer-bar"></div></div>
 
-        <div style="text-align: center; margin: 10px 0;">
-            <div id="note-names" style="font-size: 20px; font-weight:bold; height:30px; color: var(--accent);">-- - --</div>
-            <button class="btn btn-secondary" onclick="playCurrentInterval()" style="width: auto; padding: 8px 16px; font-size: 13px;">🔊 再生</button>
+        <div style="text-align: center; margin: 12px 0;">
+            <div id="note-names" style="font-size: 22px; font-weight:bold; height:32px; color: var(--primary);">-- - --</div>
+            <button class="btn btn-secondary" onclick="playCurrentInterval()" style="width: auto; padding: 6px 16px; font-size: 13px;">音を再開</button>
         </div>
 
         <!-- 鍵盤表示 -->
         <div id="piano-wrapper" class="piano-container"></div>
 
         <!-- 解答ボタンエリア -->
-        <div style="text-align: center;">
-            <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 5px;">1. 種類を選択</div>
+        <div style="text-align: center; margin-top: 16px;">
+            <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 6px;">1. 種類を選択</div>
             <div class="ans-group">
-                <button class="btn btn-ans" onclick="selectType('完全')">完全</button>
-                <button class="btn btn-ans" onclick="selectType('長')">長</button>
-                <button class="btn btn-ans" onclick="selectType('短')">短</button>
-                <button class="btn btn-ans" onclick="selectType('増')">増</button>
-                <button class="btn btn-ans" onclick="selectType('減')">減</button>
+                <button class="btn btn-ans" id="btn-type-完全" onclick="selectType('完全')">完全</button>
+                <button class="btn btn-ans" id="btn-type-長" onclick="selectType('長')">長</button>
+                <button class="btn btn-ans" id="btn-type-短" onclick="selectType('短')">短</button>
+                <button class="btn btn-ans" id="btn-type-増" onclick="selectType('増')">増</button>
+                <button class="btn btn-ans" id="btn-type-減" onclick="selectType('減')">減</button>
             </div>
 
-            <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 5px;">
-                2. 度数を選択 (選択中: <span id="selected-type-text" style="color:var(--accent); font-weight:bold;">なし</span>)
+            <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 6px;">
+                2. 度数を選択 (選択中: <span id="selected-type-text" style="color:var(--primary); font-weight:bold;">なし</span>)
             </div>
             <div class="ans-group">
-                <button class="btn btn-ans btn-num" onclick="selectDegree(1)">1度</button>
-                <button class="btn btn-ans btn-num" onclick="selectDegree(2)">2度</button>
-                <button class="btn btn-ans btn-num" onclick="selectDegree(3)">3度</button>
-                <button class="btn btn-ans btn-num" onclick="selectDegree(4)">4度</button>
-                <button class="btn btn-ans btn-num" onclick="selectDegree(5)">5度</button>
-                <button class="btn btn-ans btn-num" onclick="selectDegree(6)">6度</button>
-                <button class="btn btn-ans btn-num" onclick="selectDegree(7)">7度</button>
-                <button class="btn btn-ans btn-num" onclick="selectDegree(8)">8度</button>
+                <button class="btn btn-ans btn-num" id="btn-deg-1" onclick="selectDegree(1)">1度</button>
+                <button class="btn btn-ans btn-num" id="btn-deg-2" onclick="selectDegree(2)">2度</button>
+                <button class="btn btn-ans btn-num" id="btn-deg-3" onclick="selectDegree(3)">3度</button>
+                <button class="btn btn-ans btn-num" id="btn-deg-4" onclick="selectDegree(4)">4度</button>
+                <button class="btn btn-ans btn-num" id="btn-deg-5" onclick="selectDegree(5)">5度</button>
+                <button class="btn btn-ans btn-num" id="btn-deg-6" onclick="selectDegree(6)">6度</button>
+                <button class="btn btn-ans btn-num" id="btn-deg-7" onclick="selectDegree(7)">7度</button>
+                <button class="btn btn-ans btn-num" id="btn-deg-8" onclick="selectDegree(8)">8度</button>
             </div>
         </div>
     </div>
 
     <!-- 5. リザルト画面 -->
     <div id="screen-result" class="screen" style="text-align: center;">
-        <h1>RESULT</h1>
-        <div id="result-score" style="font-size: 48px; font-weight: 800; color: var(--accent); margin: 20px 0;">0 / 10</div>
-        <p id="result-status-text" style="font-size: 18px; margin-bottom: 30px;"></p>
+        <h1>結果発表</h1>
+        <div id="result-score" style="font-size: 48px; font-weight: 700; color: var(--primary); margin: 20px 0;">0 / 10</div>
+        <p id="result-status-text" style="font-size: 16px; margin-bottom: 32px; color: var(--text-sub);"></p>
 
         <button class="btn" onclick="showScreen('screen-levels')">レベル選択へ</button>
         <button class="btn btn-secondary" onclick="showScreen('screen-home')">トップへ</button>
@@ -430,6 +430,17 @@ const LEVEL_CONFIG = {
     5: ['P1', 'P4', 'P5', 'P8', 'm2', 'M2', 'm3', 'M3', 'A4', 'd5', 'm6', 'M6', 'm7', 'M7'],
     6: ['P1', 'P4', 'P5', 'P8', 'm2', 'M2', 'm3', 'M3', 'A4', 'd5', 'm6', 'M6', 'm7', 'M7'],
     7: ['ALL']
+};
+
+// レベルごとに出現する「種類」と「度数」の定義
+const LEVEL_AVAILABLE_OPTIONS = {
+    1: { types: ['完全'], degrees: [4, 5] },
+    2: { types: ['完全', '長', '短'], degrees: [2, 3, 4, 5] },
+    3: { types: ['完全', '長', '短', '増', '減'], degrees: [2, 3, 4, 5] },
+    4: { types: ['完全', '長', '短', '増', '減'], degrees: [2, 3, 4, 5, 6, 7] },
+    5: { types: ['完全', '長', '短', '増', '減'], degrees: [1, 2, 3, 4, 5, 6, 7, 8] },
+    6: { types: ['完全', '長', '短', '増', '減'], degrees: [1, 2, 3, 4, 5, 6, 7, 8] },
+    7: { types: ['完全', '長', '短', '増', '減'], degrees: [1, 2, 3, 4, 5, 6, 7, 8] }
 };
 
 // Web Audio API
@@ -523,12 +534,35 @@ function renderLevelGrid() {
         card.innerHTML = `
             <div style="font-weight:bold; font-size:14px;">レベル ${l}</div>
             <span class="status-badge st-${status}">${status}</span><br>
-            <button class="btn" style="font-size:12px; padding:6px; margin:5px 0 0 0;" 
+            <button class="btn" style="font-size:12px; padding:6px; margin:8px 0 0 0;" 
                 onclick="startGame(${l})" ${isLocked ? 'disabled' : ''}>
-                ${isLocked ? '🔒 鍵' : '挑戦'}
+                ${isLocked ? '未開放' : '挑戦'}
             </button>
         `;
         grid.appendChild(card);
+    }
+}
+
+function updateAnswerButtonsForLevel(level) {
+    const opts = LEVEL_AVAILABLE_OPTIONS[level];
+    
+    const allTypes = ['完全', '長', '短', '増', '減'];
+    allTypes.forEach(t => {
+        const btn = document.getElementById(`btn-type-${t}`);
+        if (opts.types.includes(t)) {
+            btn.classList.remove('hidden-option');
+        } else {
+            btn.classList.add('hidden-option');
+        }
+    });
+
+    for (let d = 1; d <= 8; d++) {
+        const btn = document.getElementById(`btn-deg-${d}`);
+        if (opts.degrees.includes(d)) {
+            btn.classList.remove('hidden-option');
+        } else {
+            btn.classList.add('hidden-option');
+        }
     }
 }
 
@@ -538,7 +572,8 @@ function startGame(level) {
     score = 0;
     timeLimit = parseInt(document.getElementById('time-select').value);
 
-    document.getElementById('game-title').innerText = `LV.${level}`;
+    document.getElementById('game-title').innerText = `LEVEL ${level}`;
+    updateAnswerButtonsForLevel(level);
     showScreen('screen-game');
     nextQuestion();
 }
@@ -686,7 +721,7 @@ function selectType(type) {
 
 function selectDegree(degree) {
     if (!selectedType) {
-        alert('最初に「完全」「長」「短」などの種類を選択してください。');
+        alert('最初に種類（「完全」「長」など）を選択してください。');
         return;
     }
     clearInterval(timer);
