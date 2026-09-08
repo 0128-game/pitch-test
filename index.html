@@ -354,7 +354,8 @@
         <p class="subtitle" id="level-subtitle">現在の制限時間でのクリア状況</p>
 
         <div class="grid" id="level-grid"></div>
-<!-- レベル定義の注記エリア（ここから追加） -->
+
+        <!-- レベル定義の注記エリア -->
         <div style="margin-top: 24px; padding: 16px; background: #f8f9fa; border-radius: 10px; font-size: 13px; border: 1px solid var(--border-color);">
             <div style="font-weight: bold; margin-bottom: 8px; color: var(--text-main);">【レベル範囲一覧】</div>
             <ul style="margin: 0; padding-left: 20px; line-height: 1.6; color: var(--text-sub);">
@@ -367,8 +368,8 @@
                 <li><strong>レベル7:</strong> すべての増減音程を含むすべての音程が出題</li>
             </ul>
         </div>
-        <!-- （ここまで追加） -->
-        <button class="btn btn-secondary" onclick="showScreen('screen-home')">トップへ戻る</button>
+
+        <button class="btn btn-secondary" onclick="showScreen('screen-home')" style="margin-top: 16px;">トップへ戻る</button>
     </div>
 
     <!-- 3. 設定画面 -->
@@ -636,7 +637,7 @@ function setupLevelUIControls() {
         // レベル4: 度数は2〜7度
         [1, 8].forEach(d => document.getElementById(`btn-deg-${d}`)?.classList.add('hidden-option'));
     }
-    // レベル5〜7: 制限なし（全ボタン表示・「完全2度」などの組み合わせ入力も可能）
+    // レベル5〜7: 制限なし（全ボタン表示）
 }
 
 // レベルごとの出題生成処理
@@ -702,7 +703,7 @@ function generateQuestion() {
         intervalInfo = getIntervalFromNotes(rootMidi, nextMidi, deg);
     }
 
-    return { rootMidi, nextMidi, intervalInfo };
+    return { rootMidi, nextMidi, intervalInfo, degree: intervalInfo.degree };
 }
 
 function resetSelections() {
@@ -723,9 +724,27 @@ function nextQuestion() {
     currentIntervalData = generateQuestion();
     
     const notation = document.querySelector('input[name="notation"]:checked').value;
-    const rName = NOTE_NAMES[notation][currentIntervalData.rootMidi % 12];
-    const nName = NOTE_NAMES[notation][currentIntervalData.nextMidi % 12];
-    document.getElementById('note-names').innerText = `${rName} - ${nName}`;
+    let rName = NOTE_NAMES[notation][currentIntervalData.rootMidi % 12];
+    let nName = NOTE_NAMES[notation][currentIntervalData.nextMidi % 12];
+
+    // 8度（オクターブ上）の場合に高音識別表記を適用
+    const isHigh = currentIntervalData.nextMidi >= currentIntervalData.rootMidi + 12;
+
+    if (isHigh) {
+        if (notation === 'doremi') {
+            // ドレミ：上に線を付ける
+            nName = `<span style="text-decoration: overline;">${nName}</span>`;
+        } else if (notation === 'cde') {
+            // CDE：低い方にlo、高い方にhiを付与
+            rName = `lo${rName}`;
+            nName = `hi${nName}`;
+        } else if (notation === 'haniho') {
+            // ハニホ：上に点（ドット）を付ける
+            nName = `<span style="display: inline-block; position: relative;"><span style="position: absolute; top: -0.6em; left: 50%; transform: translateX(-50%); font-size: 0.8em;">・</span>${nName}</span>`;
+        }
+    }
+
+    document.getElementById('note-names').innerHTML = `${rName} - ${nName}`;
 
     renderPiano();
     playCurrentInterval();
